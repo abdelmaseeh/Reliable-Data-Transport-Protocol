@@ -28,10 +28,10 @@ int main(int argc, char *argv[])
 
 	memset(&echoServAddr, 0, sizeof(echoServAddr));
 	echoServAddr.sin_family = AF_INET;
-	echoServAddr.sin_addr.s_addr = htonI(INADDR_ANY);
+	echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	echoServAddr.sin_port = htons(echoServPort);
 
-	if (bind(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < O)
+	if (bind(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
 		printf("bind() failed");
 
 
@@ -41,10 +41,13 @@ int main(int argc, char *argv[])
 		if ((recvMsgSize = recvfrom(sock, echoBuffer, ECHOMAX, 0, (struct sockaddr *) &echoClntAddr, &cliAddrLen)) < 0)
 			printf("recvfrom() failed") ;
 
-		printf("Handling client %s\n", inet_ntoa(echoClntAddr, sin_addr)) ;
-		if (!fork())		
-			if (sendto(sock, echoBuffer, recvMsgSize, O, (struct sockaddr *) &echoClntAddr, sizeof(echoClntAddr)) != recvMsgSize)
+		printf("Handling client %s\n", inet_ntoa(echoClntAddr.sin_addr)) ;
+		if (!fork())
+		{		
+			if (sendto(sock, echoBuffer, recvMsgSize, 0, (struct sockaddr *) &echoClntAddr, sizeof(echoClntAddr)) != recvMsgSize)
+			{
 				printf("sendto() sent a different number of bytes than expected");
-
+			}
+		}
 	}
 }
