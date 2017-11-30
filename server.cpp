@@ -36,6 +36,12 @@ struct ack_packet {
 	uint32_t ackno;
 };
 
+bool dropPacket(unsigned int seed, double probability)
+{
+	srand(seed) ;
+	return ((double) rand() / (RAND_MAX)) < probability ; 
+}
+
 vector<char> readFile(string fileName)
 {
     ifstream ifs(fileName, ios::binary|ios::ate);
