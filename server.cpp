@@ -1,10 +1,20 @@
 #include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/unistd.h>
+#include <sys/fcntl.h>
+#include <sys/time.h>
 #include <bits/stdc++.h>
+#include <sys/ioctl.h>
 
 #define ECHOMAX 255
 #define MAX_PACKET_LENGTH 512
@@ -42,7 +52,7 @@ vector<packet> getFilePackets(string fileName)
 	vector<packet> packets ;
 	vector<char> file_data = readFile(fileName) ;
 	int index = 0 ;
-	int i = 0  ;
+	uint32_t i = 0  ;
 	vector<char>::iterator it = file_data.begin();
 
 	for (; i < file_data.size()/MAX_PACKET_LENGTH + 1; i++)
@@ -53,7 +63,7 @@ vector<packet> getFilePackets(string fileName)
 		{
 				len = MAX_PACKET_LENGTH ;
 		}
-		else if (ile_data.size() - index > 0)
+		else if (file_data.size() - index > 0)
 		{
 			len = file_data.size() - index ;
 		}
@@ -64,16 +74,14 @@ vector<packet> getFilePackets(string fileName)
 
 		// assigning data
 		char data[MAX_PACKET_LENGTH];
-		copy(it, it+len, data)  ;
+		//copy(it, it+len, data)  ;
 
-		// assinging data and header to packet to be send 
-		packet p = {
-			0, // checksum
-			len, // length
-			i, // sequence number
-			data, // data
-		} ;
-
+		// assinging data and header to packet to be send
+		packet p  ;
+		p.cksum = 0 ;  // checksum
+		p.len = len ;  // length
+		p.seqno = i ; // sequence number
+		copy(it, it+len, p.data) ; // data
 
 		packets.push_back(p) ;
 		index += len ;
