@@ -4,14 +4,90 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <bits/stdc++.h>
 
 #define ECHOMAX 255
+#define MAX_PACKET_LENGTH 512
+
+using namespace std;
+
+struct packet {
+ /*header*/
+ 	uint16_t cksum;
+	uint16_t len;
+	uint32_t seqno;
+	/*data*/
+	char data[MAX_PACKET_LENGTH];
+};
+
+struct ack_packet {
+	uint16_t cksum;
+	uint16_t len;
+	uint32_t ackno;
+};
+
+vector<char> readFile(string fileName)
+{
+    ifstream ifs(fileName, ios::binary|ios::ate);
+    ifstream::pos_type pos = ifs.tellg();
+    vector<char>  res(pos);
+
+    ifs.seekg(0, ios::beg);
+    ifs.read(&res[0], pos);
+    return res;
+}
+
+vector<packet> getFilePackets(string fileName)
+{
+	vector<packet> packets ;
+	vector<char> file_data = readFile(fileName) ;
+	int index = 0 ;
+	int i = 0  ;
+	vector<char>::iterator it = file_data.begin();
+
+	for (; i < file_data.size()/MAX_PACKET_LENGTH + 1; i++)
+	{
+		uint16_t len;
+
+		if (index + MAX_PACKET_LENGTH < file_data.size())
+		{
+				len = MAX_PACKET_LENGTH ;
+		}
+		else if (ile_data.size() - index > 0)
+		{
+			len = file_data.size() - index ;
+		}
+		else
+		{
+			break ;
+		}
+
+		// assigning data
+		char data[MAX_PACKET_LENGTH];
+		copy(it, it+len, data)  ;
+
+		// assinging data and header to packet to be send 
+		packet p = {
+			0, // checksum
+			len, // length
+			i, // sequence number
+			data, // data
+		} ;
+
+
+		packets.push_back(p) ;
+		index += len ;
+		it += len ;
+	}
+
+	return packets ;
+}
 
 int main(int argc, char *argv[])
 {
 	int sock;
-	struct sockaddr_in echoServAddr; 
-	struct sockaddr_in echoClntAddr; 
+	struct sockaddr_in echoServAddr;
+	struct sockaddr_in echoClntAddr;
 	unsigned int cliAddrLen;
 	char echoBuffer[ECHOMAX];
 	unsigned short echoServPort;
@@ -22,7 +98,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	echoServPort = atoi(argv[1]); 
+	echoServPort = atoi(argv[1]);
 	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 		printf("socket() failed");
 
@@ -43,7 +119,7 @@ int main(int argc, char *argv[])
 
 		printf("Handling client %s\n", inet_ntoa(echoClntAddr.sin_addr)) ;
 		if (!fork())
-		{		
+		{
 			if (sendto(sock, echoBuffer, recvMsgSize, 0, (struct sockaddr *) &echoClntAddr, sizeof(echoClntAddr)) != recvMsgSize)
 			{
 				printf("sendto() sent a different number of bytes than expected");
