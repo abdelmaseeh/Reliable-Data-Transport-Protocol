@@ -148,8 +148,8 @@ int main(int argc, char *argv[])
 
 	cout << "bind" << endl;
 	//cout << echoServAddr.sin_addr.s_addr << endl;
-	//for (int i=0;i < 1; i++) /* Run forever */
-	while(true){
+	for (int i=0;i < 1; i++) {/* Run forever */
+	//while(true){
 		char packetBuffer[MAX_PACKET_LENGTH] ;
 		cliAddrLen = sizeof(echoClntAddr);
 		if ((recvMsgSize = recvfrom(sock, packetBuffer, MAX_PACKET_LENGTH, 0, (struct sockaddr *) &echoClntAddr, &cliAddrLen)) < 0)
